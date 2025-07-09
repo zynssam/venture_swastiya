@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Swastiya – Indian Nutrition Simplified</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <style>
+    :root {
+      --primary: #3498db;
+      --accent: #9b59b6;
+      --bg: #0e1016;
+      --card-bg: rgba(24,27,35,0.65);
+      --text: #ecf0f1;
+      --radius: 14px;
+      --shadow: 0 6px 22px rgba(0,0,0,0.55);
+    }
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: clamp(1rem,2vw,1.125rem);
+      overflow-x: hidden;
+    }
+
+    /* Animated gradient background */
+    .bg-grad {
+      position: fixed; inset: 0; z-index: -1;
+      background: linear-gradient(60deg,#1e3c72,#2a5298);
+      background-size: 400% 400%;
+      animation: bgShift 25s ease infinite;
+    }
+    @keyframes bgShift {
+      0%   { background-position: 0 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0 50%; }
+    }
+
+    /* Floating shapes */
+    .bg-anim {
+      position: fixed; inset: 0; z-index: -2;
+      overflow: hidden; pointer-events: none;
+    }
+    .bg-anim .shape {
+      position: absolute;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+      opacity: .3;
+      will-change: transform, opacity;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 2rem 1rem 2.5rem;
+      background: linear-gradient(120deg,#1e3c72,#2a5298);
+      background-size: 200% 200%;
+      animation: headerBgShift 15s ease infinite;
+    }
+    @keyframes headerBgShift {
+      0%   { background-position: 20% 0%; }
+      50%  { background-position: 80% 100%; }
+      100% { background-position: 20% 0%; }
+    }
+    header h1 {
+      font-size: clamp(1.8rem,5vw,2.5rem);
+      font-weight: 700;
+      margin-bottom: .4rem;
+    }
+    .animated-text span {
+      display: inline-block;
+    }
+    header p {
+      max-width: 600px;
+      margin: auto;
+      opacity: .85;
+      line-height: 1.5;
+    }
+
+    /* Sections */
+    section {
+      max-width: 1160px;
+      margin: auto;
+      padding: 3.5rem 1rem;
+    }
+    h2 {
+      font-size: 1.9rem;
+      margin-bottom: 1.6rem;
+      text-align: center;
+      color: var(--accent);
+      position: relative;
+    }
+    h2::after {
+      content: "";
+      display: block;
+      width: 70px; height: 4px;
+      background: var(--primary);
+      border-radius: 2px;
+      margin: .6rem auto 0;
+    }
+
+    .grid, .proto-grid {
+      display: grid;
+      gap: 1.8rem;
+      grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 2rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(50px);
+      transition: transform .3s, box-shadow .3s;
+    }
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 8px 26px rgba(0,0,0,0.6);
+    }
+    .card .icon {
+      font-size: 1.5rem;
+      display: inline-block;
+      transition: filter .3s, transform .3s;
+    }
+    .card:hover .icon {
+      filter: drop-shadow(0 0 6px var(--primary));
+      transform: rotate(10deg);
+    }
+
+    /* Prototype previews */
+    .proto-card img {
+      width: 100%;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: block;
+    }
+
+    /* Button & counters */
+    button#toggleChart {
+      display: block;
+      margin: 1rem auto 0;
+      padding: .6rem 1.2rem;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 600;
+      transition: background .3s;
+    }
+    button#toggleChart:hover {
+      background: var(--accent);
+    }
+    .counter {
+      display: block;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-top: .4rem;
+    }
+
+    /* Chart container */
+    canvas {
+      width: 100%;
+      max-height: 340px;
+      margin-top: 2rem;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem;
+    }
+
+    /* Footer */
+    footer {
+      background: #07080d;
+      text-align: center;
+      padding: 1.1rem;
+      font-size: .9rem;
+      margin-top: 4rem;
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      .bg-grad, .bg-anim { animation: none; }
+      .card { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grad"></div>
+  <div class="bg-anim"></div>
+
+  <header>
+    <h1 class="animated-text">Swastiya</h1>
+    <p>Your one-stop app to snap, track & understand Indian meals—without the hassle.</p>
+  </header>
+
+  <section>
+    <h2>Top Features</h2>
+    <div class="grid">
+      <div class="card">
+        <span class="icon">📸</span>
+        <strong>Snap & Track</strong><br>
+        <small>Auto-detect dish & calories.</small>
+      </div>
+      <div class="card">
+        <span class="icon">📊</span>
+        <strong>Nutrition Dashboard</strong><br>
+        <small>Calories, macros & progress.</small>
+      </div>
+      <div class="card">
+        <span class="icon">🎯</span>
+        <strong>Personal Targets</strong><br>
+        <small>Set weight & macro goals.</small>
+      </div>
+      <div class="card">
+        <span class="icon">📴</span>
+        <strong>Offline Logging</strong><br>
+        <small>Works without internet.</small>
+      </div>
+      <div class="card">
+        <span class="icon">🔔</span>
+        <strong>Meal Alerts</strong><br>
+        <small>Never miss a meal.</small>
+      </div>
+      <div class="card">
+        <span class="icon">💬</span>
+        <strong>Healthy Tips</strong><br>
+        <small>Tailored to Indian cuisine.</small>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Prototype Previews</h2>
+    <div class="proto-grid">
+      <div class="proto-card">
+        <img src="image.png" alt="Screen 1">
+      </div>
+      <div class="proto-card">
+        <img src="IMG-20250527-WA0000.jpg" alt="Screen 2">
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Financial Snapshot</h2>
+    <div class="grid">
+      <div class="card">
+        <span class="icon">💰</span>
+        <strong>Model</strong><br>
+        <small>Freemium + ₹299/mo Pro</small>
+      </div>
+      <div class="card">
+        <span class="icon">📈</span>
+        <strong>Yr-1 Revenue</strong>
+        <span class="counter" data-target="8970000">₹0</span>
+      </div>
+      <div class="card">
+        <span class="icon">🧾</span>
+        <strong>Gross Profit</strong>
+        <span class="counter" data-target="7100000">₹0</span>
+      </div>
+      <div class="card">
+        <span class="icon">💹</span>
+        <strong>Net Profit</strong>
+        <span class="counter" data-target="3500000">₹0</span>
+      </div>
+      <div class="card">
+        <span class="icon">⏳</span>
+        <strong>Break-even</strong><br>
+        <small>Months 7-8</small>
+      </div>
+    </div>
+    <button id="toggleChart">Switch to Line Chart</button>
+    <canvas id="financeChart"></canvas>
+  </section>
+
+  <section>
+    <h2>Roadmap (12 months)</h2>
+    <div class="grid">
+      <div class="card"><span class="icon">🛠️</span><strong>MVP Build</strong><br><small>Months 1-3 (₹3 L)</small></div>
+      <div class="card"><span class="icon">✅</span><strong>MVP Validation</strong><br><small>Months 4-6 (₹7.5 L)</small></div>
+      <div class="card"><span class="icon">🚀</span><strong>Launch</strong><br><small>Months 7-9 (₹13.5 L)</small></div>
+      <div class="card"><span class="icon">📈</span><strong>Scale Users</strong><br><small>Months 10-12 (₹13 L)</small></div>
+    </div>
+  </section>
+
+  <footer>© 2025 Swastiya – Indian Nutrition Simplified</footer>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Floating shapes
+    const bgAnim = document.querySelector('.bg-anim');
+    for (let i = 0; i < 25; i++) {
+      const size = gsap.utils.random(50, 200, 1);
+      const shape = document.createElement('div');
+      shape.classList.add('shape');
+      Object.assign(shape.style, {
+        width: `${size}px`,
+        height: `${size}px`,
+        top: `${gsap.utils.random(0, 100, 1)}%`,
+        left: `${gsap.utils.random(0, 100, 1)}%`
+      });
+      bgAnim.append(shape);
+      gsap.to(shape, {
+        x: gsap.utils.random(-100, 100),
+        y: gsap.utils.random(-100, 100),
+        opacity: 0,
+        duration: gsap.utils.random(8, 18),
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        delay: gsap.utils.random(0, 4)
+      });
+    }
+
+    // Header fly-in
+    const title = document.querySelector('.animated-text');
+    const chars = title.textContent.split('');
+    title.textContent = '';
+    chars.forEach(ch => {
+      const span = document.createElement('span');
+      span.textContent = ch;
+      title.appendChild(span);
+    });
+    gsap.from('.animated-text span', {
+      y: 100, opacity: 0, duration: 1,
+      ease: 'back.out(1.7)', stagger: 0.05
+    });
+    gsap.from('header p', {
+      y: 30, opacity: 0, duration: 1, delay: 0.6,
+      ease: 'power2.out'
+    });
+
+    // Cards scroll-in
+    gsap.utils.toArray('.card').forEach((el, i) => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 1,
+        ease: 'power2.out', delay: i * 0.1,
+        scrollTrigger: { trigger: el, start: 'top 85%' }
+      });
+    });
+
+    // Animated counters
+    document.querySelectorAll('.counter').forEach(counter => {
+      const update = () => {
+        const target = +counter.dataset.target;
+        const current = +counter.innerText.replace(/[₹,]/g, '');
+        const inc = Math.ceil(target / 200);
+        if (current < target) {
+          counter.innerText = '₹' + (current + inc).toLocaleString();
+          setTimeout(update, 20);
+        } else {
+          counter.innerText = '₹' + target.toLocaleString();
+        }
+      };
+      update();
+    });
+
+    // Chart.js toggle
+    let chartType = 'bar', financeChart;
+    const ctx = document.getElementById('financeChart').getContext('2d');
+    function drawChart() {
+      if (financeChart) financeChart.destroy();
+      financeChart = new Chart(ctx, {
+        type: chartType,
+        data: {
+          labels: ['Revenue', 'Gross', 'Net'],
+          datasets: [{
+            label: '₹ Lakhs',
+            data: [89.7, 71, 35],
+            backgroundColor: ['#3498db', '#9b59b6', '#e74c3c'],
+            borderColor: ['#3498db', '#9b59b6', '#e74c3c'],
+            fill: chartType === 'line'
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { color: '#bdc3c7' } },
+            x: { ticks: { color: '#bdc3c7' } }
+          }
+        }
+      });
+    }
+    document.getElementById('toggleChart').addEventListener('click', () => {
+      chartType = chartType === 'bar' ? 'line' : 'bar';
+      document.getElementById('toggleChart').innerText =
+        chartType === 'bar' ? 'Switch to Line Chart' : 'Switch to Bar Chart';
+      drawChart();
+    });
+    drawChart();
+  </script>
+</body>
+</html>
